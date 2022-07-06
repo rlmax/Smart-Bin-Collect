@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:title="Profile"
+        android:id="@+id/menu_two"
+        app:showAsAction="always"
+        app:actionLayout="@layout/profile_menu_layout"/>
+    <item
+        android:id="@+id/miLogout"
+        android:icon="@drawable/ic_baseline_login_24"
+        app:showAsAction="ifRoom"
+        android:title="logout">
+    </item>
+</menu>

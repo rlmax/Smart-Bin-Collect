@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "798533037128",
+    "firebase_url": "https://smartbin-354515-default-rtdb.firebaseio.com",
+    "project_id": "smartbin-354515",
+    "storage_bucket": "smartbin-354515.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:798533037128:android:629b3d108aba934fe7fc7d",
+        "android_client_info": {
+          "package_name": "com.rlmax.smartbincollect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "798533037128-spek4nvh1idmkj09g3lgf0skdi2i2pje.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMM32Pb2sW2jZ_boi9xYtW8HX9LPE0aP8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "798533037128-spek4nvh1idmkj09g3lgf0skdi2i2pje.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
