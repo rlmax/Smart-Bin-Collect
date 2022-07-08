@@ -19,6 +19,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -89,6 +90,7 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
+                                                FirebaseMessaging.getInstance().subscribeToTopic("notification");
                                                 progress_circular.setVisibility(View.GONE);
                                                 openDialog("Sign Up Success", true);
                                             }

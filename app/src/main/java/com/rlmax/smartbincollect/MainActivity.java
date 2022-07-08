@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 lat =(Double) dataSnapshot.child("latitude").getValue();
                 log =(Double) dataSnapshot.child("longitude").getValue();
                 percentage = ((Long) dataSnapshot.child("precent").getValue()).intValue();
-                Log.d("CCCCC", binName);
                 if(percentage >= 80) {
                     tvNoBin.setVisibility(View.GONE);
                     mapFragment.getView().setVisibility(View.VISIBLE);

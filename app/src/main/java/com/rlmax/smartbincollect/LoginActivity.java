@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -68,6 +69,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             //   Log.d(TAG, "signInWithEmail:success");
+                            FirebaseMessaging.getInstance().subscribeToTopic("notification");
                             FirebaseUser user = mAuth.getCurrentUser();
                             progress_circular.setVisibility(View.GONE);
                             String title = "Successfully Login :" + user.getDisplayName();
