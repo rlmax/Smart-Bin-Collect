@@ -8,11 +8,11 @@ var msgData;
 exports.SendNotification = functions.database.ref()
     .onUpdate((snapshot, context) => {
         var newval = snapshot.after.val();
-        if (newval.precent >= 80) {
+        if (newval.precent >= 80 && newval.status == false) {
             var payload = {
                     "notification": {
                         "title": "Smart Bin Collect",
-                        "body": "Bin Full  prescentage " + newval.precent + "\n" + " now you can collect this bin",
+                        "body": "Bin is full , now you can collect garbage bin " + newval.name,
                         "sound": "default"
                     }
                 }

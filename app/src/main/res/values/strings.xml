@@ -8,4 +8,7 @@
     <string name="i_already_have_an_account">I already have an account</string>
     <string name="currently_no_bin_is_full">Currently, no bin is full</string>
     <string name="logout">Logout</string>
+    <string name="bin_is_full_now_you_can_pick_up">Bin is full now you can pick up</string>
+    <string name="reject">Reject</string>
+    <string name="accept">Accept</string>
 </resources>

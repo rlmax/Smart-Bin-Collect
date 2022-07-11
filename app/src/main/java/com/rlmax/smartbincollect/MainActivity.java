@@ -1,11 +1,14 @@
 package com.rlmax.smartbincollect;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +25,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -30,6 +35,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+
+import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -42,9 +49,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double lat;
     private double log;
     private int percentage;
+    private boolean status;
     Marker currentMarker = null;
     SupportMapFragment mapFragment;
     private TextView tvNoBin;
+    private String driverName;
+    private String driverId;
+    private RelativeLayout rlRequestView;
+    private DatabaseReference rootRef;
+    SharedPreferences sharedPreferences;
+    private Long timeStamp;
+    private FrameLayout flPickupBtn;
 
 
     @Override
@@ -52,14 +67,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tvNoBin = findViewById(R.id.tvNoBin);
+        rlRequestView = findViewById(R.id.rlRequestView);
+        flPickupBtn = findViewById(R.id.flPickupBtn);
+        sharedPreferences = getSharedPreferences("MySharedPref",MODE_PRIVATE);
         mapFragment  = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        rlRequestView.setVisibility(View.GONE);
+        flPickupBtn.setVisibility(View.GONE);
         mapFragment.getView().setVisibility(View.INVISIBLE);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        rootRef = FirebaseDatabase.getInstance().getReference();
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -67,19 +87,35 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 lat =(Double) dataSnapshot.child("latitude").getValue();
                 log =(Double) dataSnapshot.child("longitude").getValue();
                 percentage = ((Long) dataSnapshot.child("precent").getValue()).intValue();
-                if(percentage >= 80) {
-                    tvNoBin.setVisibility(View.GONE);
-                    mapFragment.getView().setVisibility(View.VISIBLE);
-                    if (currentMarker != null) {
-                        currentMarker.remove();
-                        currentMarker = null;
+                status = (boolean) dataSnapshot.child("status").getValue();
+                driverName = dataSnapshot.child("d_name").getValue().toString();
+                driverId = dataSnapshot.child("d_uid").getValue().toString();
+                timeStamp = (Long) dataSnapshot.child("Time").getValue();
+                if(percentage >= 80 && !status) {
+                    if(sharedPreferences.getLong("timestamp",0) != timeStamp) {
+                        tvNoBin.setVisibility(View.GONE);
+                        flPickupBtn.setVisibility(View.GONE);
+                        mapFragment.getView().setVisibility(View.INVISIBLE);
+                        rlRequestView.setVisibility(View.VISIBLE);
                     }
-
-                    LatLng latLng = new LatLng(lat, log);
-                    currentMarker = mMap.addMarker(new MarkerOptions().position(latLng).title(binName));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
+                }else if(percentage >= 80 && status && user.getUid().equals(driverId)){
+                    if(sharedPreferences.getLong("timestamp",0) != timeStamp) {
+                        tvNoBin.setVisibility(View.GONE);
+                        rlRequestView.setVisibility(View.GONE);
+                        flPickupBtn.setVisibility(View.VISIBLE);
+                        mapFragment.getView().setVisibility(View.VISIBLE);
+                        if (currentMarker != null) {
+                            currentMarker.remove();
+                            currentMarker = null;
+                        }
+                        LatLng latLng = new LatLng(lat, log);
+                        currentMarker = mMap.addMarker(new MarkerOptions().position(latLng).title(binName));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
+                    }
                 }else{
                     tvNoBin.setVisibility(View.VISIBLE);
+                    rlRequestView.setVisibility(View.GONE);
+                    flPickupBtn.setVisibility(View.GONE);
                     mapFragment.getView().setVisibility(View.INVISIBLE);
                 }
 
@@ -88,6 +124,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 tvNoBin.setVisibility(View.VISIBLE);
+                rlRequestView.setVisibility(View.GONE);
+                flPickupBtn.setVisibility(View.GONE);
+                mapFragment.getView().setVisibility(View.INVISIBLE);
             }
 
         };
@@ -131,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 final FirebaseAuth mAuth;
                 mAuth = FirebaseAuth.getInstance();
                 mAuth.signOut();
+                sharedPreferences.edit().clear().apply();
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
@@ -146,7 +186,51 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
+    }
 
+    public void onClick(View view) {
+        if(view.getId() == R.id.btnAccept){
+            HashMap<String, Object> newData = new HashMap<>();
+            newData.put("status", true);
+            newData.put("d_uid",user.getUid());
+            newData.put("d_name",user.getDisplayName());
+            rootRef.updateChildren(newData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    tvNoBin.setVisibility(View.GONE);
+                    rlRequestView.setVisibility(View.GONE);
+                    flPickupBtn.setVisibility(View.VISIBLE);
+                    mapFragment.getView().setVisibility(View.VISIBLE);
+                }
+            });
+        }
+        if(view.getId() == R.id.btnReject){
+            SharedPreferences.Editor myEdit = sharedPreferences.edit();
+            myEdit.putLong("timestamp", timeStamp);
+            myEdit.apply();
+            tvNoBin.setVisibility(View.VISIBLE);
+            rlRequestView.setVisibility(View.GONE);
+            flPickupBtn.setVisibility(View.GONE);
+            mapFragment.getView().setVisibility(View.INVISIBLE);
+        }
+        if(view.getId() == R.id.fbBtn){
+            HashMap<String, Object> newData = new HashMap<>();
+            newData.put("status", false);
+            newData.put("d_uid",user.getUid());
+            newData.put("precent",0);
+            rootRef.updateChildren(newData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    SharedPreferences.Editor myEdit = sharedPreferences.edit();
+                    myEdit.putLong("timestamp", timeStamp);
+                    myEdit.apply();
+                    tvNoBin.setVisibility(View.VISIBLE);
+                    rlRequestView.setVisibility(View.GONE);
+                    flPickupBtn.setVisibility(View.GONE);
+                    mapFragment.getView().setVisibility(View.INVISIBLE);
+                }
+            });
 
+        }
     }
 }
