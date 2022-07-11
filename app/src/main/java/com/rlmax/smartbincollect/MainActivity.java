@@ -214,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mapFragment.getView().setVisibility(View.INVISIBLE);
         }
         if(view.getId() == R.id.fbBtn){
+            Long tempTimeStamp = timeStamp;
             Long tsLong = System.currentTimeMillis()/1000;
             HashMap<String, Object> newData = new HashMap<>();
             newData.put("status", false);
@@ -224,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     SharedPreferences.Editor myEdit = sharedPreferences.edit();
-                    myEdit.putLong("timestamp", timeStamp);
+                    myEdit.putLong("timestamp", tempTimeStamp);
                     myEdit.apply();
                     tvNoBin.setVisibility(View.VISIBLE);
                     rlRequestView.setVisibility(View.GONE);
