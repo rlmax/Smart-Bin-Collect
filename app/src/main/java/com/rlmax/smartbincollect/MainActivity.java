@@ -214,10 +214,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mapFragment.getView().setVisibility(View.INVISIBLE);
         }
         if(view.getId() == R.id.fbBtn){
+            Long tsLong = System.currentTimeMillis()/1000;
             HashMap<String, Object> newData = new HashMap<>();
             newData.put("status", false);
             newData.put("d_uid",user.getUid());
             newData.put("precent",0);
+            newData.put("Time",tsLong);
             rootRef.updateChildren(newData).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
